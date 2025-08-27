@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking System Action Points Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        select, input {
+            padding: 8px 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f4;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .status.not-started {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .status.in-progress {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.pending {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status.blocked {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .priority {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .priority.high {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .priority.medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .priority.low {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .assignee {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .category {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .notes {
+            max-width: 200px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .export-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .summary-card h3 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .summary-card p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        #id-column {
+            width: 50px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Banking System Action Points Tracker</h1>
+        <p>Core Banking & Mobile App Development - Status Dashboard</p>
+    </div>
+
+    <div class="summary">
+        <div class="summary-card">
+            <h3 id="total-items">20</h3>
+            <p>Total Items</p>
+        </div>
+        <div class="summary-card">
+            <h3 id="completed-items">1</h3>
+            <p>Completed</p>
+        </div>
+        <div class="summary-card">
+            <h3 id="in-progress-items">0</h3>
+            <p>In Progress</p>
+        </div>
+        <div class="summary-card">
+            <h3 id="pending-items">19</h3>
+            <p>Pending</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="filter-group">
+            <label>Filter by Status:</label>
+            <select id="status-filter">
+                <option value="">All Statuses</option>
+                <option value="not-started">Not Started</option>
+                <option value="in-progress">In Progress</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="blocked">Blocked</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Filter by Assignee:</label>
+            <select id="assignee-filter">
+                <option value="">All Assignees</option>
+                <option value="MICAH">MICAH</option>
+                <option value="GEMINI">GEMINI</option>
+                <option value="DEV TEAM">DEV TEAM</option>
+                <option value="JOHN BEN">JOHN BEN</option>
+                <option value="BABAFEMI">BABAFEMI</option>
+                <option value="ISRAEL">ISRAEL</option>
+                <option value="MICAH AND TEAM">MICAH AND TEAM</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Filter by Priority:</label>
+            <select id="priority-filter">
+                <option value="">All Priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+        </div>
+        
+        <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
+    </div>
+
+    <div class="table-container">
+        <table id="action-table">
+            <thead>
+                <tr>
+                    <th id="id-column">ID</th>
+                    <th>Action Item</th>
+                    <th>Assignee</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>Progress</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Table rows will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const actionItems = [
+            {
+                id: 1,
+                item: "Enable PND and Tier System from Core Banking - Mail should be sent for instruction",
+                assignee: "MICAH",
+                category: "Core Banking",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-08-30",
+                progress: "0%",
+                notes: "Awaiting instruction email"
+            },
+            {
+                id: 2,
+                item: "Queue mechanisms implementation on last mile processing",
+                assignee: "GEMINI",
+                category: "Infrastructure",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-09-05",
+                progress: "0%",
+                notes: "Critical for transaction processing"
+            },
+            {
+                id: 3,
+                item: "Device ID (hashed) as part of token generation for mobile transactions",
+                assignee: "MICAH AND TEAM",
+                category: "Security",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-08-31",
+                progress: "0%",
+                notes: "Enhanced security for mobile app"
+            },
+            {
+                id: 4,
+                item: "CBA (GEMINI) database access on staging environment",
+                assignee: "MICAH AND TEAM",
+                category: "Database",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-08-29",
+                progress: "0%",
+                notes: "Required for development testing"
+            },
+            {
+                id: 5,
+                item: "Test queue implementation from GEMINI for mobile transactions",
+                assignee: "MICAH AND TEAM",
+                category: "Testing",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-09-07",
+                progress: "0%",
+                notes: "Depends on item #2 completion"
+            },
+            {
+                id: 6,
+                item: "Generate different tokens for different transaction types",
+                assignee: "DEV TEAM",
+                category: "Security",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-09-02",
+                progress: "0%",
+                notes: "Transaction-specific tokenization"
+            },
+            {
+                id: 7,
+                item: "Share table structure for request logging before COB today",
+                assignee: "JOHN BEN",
+                category: "Database",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-08-27",
+                progress: "0%",
+                notes: "URGENT - Due today COB"
+            },
+            {
+                id: 8,
+                item: "Clone staging DB and duplicate for development purposes",
+                assignee: "BABAFEMI",
+                category: "Database",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-08-30",
+                progress: "0%",
+                notes: "Development environment setup"
+            },
+            {
+                id: 9,
+                item: "Awaiting responses from email request on config files access",
+                assignee: "MICAH AND TEAM",
+                category: "Configuration",
+                priority: "medium",
+                status: "pending",
+                dueDate: "2025-08-29",
+                progress: "0%",
+                notes: "Waiting for external response"
+            },
+            {
+                id: 10,
+                item: "Return login status (ACTIVE, DORMANT, FLAGS, PND) as part of customer info",
+                assignee: "GEMINI",
+                category: "API",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-09-01",
+                progress: "0%",
+                notes: "Customer status visibility"
+            },
+            {
+                id: 11,
+                item: "Create log table for user device changes tracking",
+                assignee: "MICAH AND TEAM",
+                category: "Database",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-09-03",
+                progress: "0%",
+                notes: "Device change audit trail"
+            },
+            {
+                id: 12,
+                item: "GEMINI to provide endpoint for device change updates",
+                assignee: "GEMINI",
+                category: "API",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-09-03",
+                progress: "0%",
+                notes: "Endpoint for device management"
+            },
+            {
+                id: 13,
+                item: "Manage transitions from PND to ACTIVE status",
+                assignee: "GEMINI",
+                category: "Business Logic",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-09-05",
+                progress: "0%",
+                notes: "Status transition workflow"
+            },
+            {
+                id: 14,
+                item: "Provide status check endpoint for PND to ACTIVE transitions",
+                assignee: "GEMINI",
+                category: "API",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-09-05",
+                progress: "0%",
+                notes: "Customer care integration"
+            },
+            {
+                id: 15,
+                item: "Encrypt security questions when saving to database",
+                assignee: "DEV TEAM",
+                category: "Security",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-09-01",
+                progress: "0%",
+                notes: "Data protection compliance"
+            },
+            {
+                id: 16,
+                item: "Update Forget PIN flow",
+                assignee: "ISRAEL",
+                category: "Authentication",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-09-02",
+                progress: "0%",
+                notes: "PIN recovery process"
+            },
+            {
+                id: 17,
+                item: "Include token as header for all CBA calls",
+                assignee: "MICAH AND TEAM",
+                category: "Security",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-08-31",
+                progress: "0%",
+                notes: "Authentication standardization"
+            },
+            {
+                id: 18,
+                item: "Verify PIN and Transaction PIN encryption methodology",
+                assignee: "DEV TEAM",
+                category: "Security",
+                priority: "medium",
+                status: "completed",
+                dueDate: "2025-08-27",
+                progress: "100%",
+                notes: "DONE - Handled by Django framework"
+            },
+            {
+                id: 19,
+                item: "Implement refresh token at critical points in mobile app",
+                assignee: "DEV TEAM",
+                category: "Security",
+                priority: "high",
+                status: "not-started",
+                dueDate: "2025-09-05",
+                progress: "0%",
+                notes: "Session management enhancement"
+            },
+            {
+                id: 20,
+                item: "Auto logout after 2 minutes of idleness",
+                assignee: "ISRAEL",
+                category: "Security",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-09-02",
+                progress: "0%",
+                notes: "Session timeout implementation"
+            },
+            {
+                id: 21,
+                item: "Implement logs for device changes",
+                assignee: "BABAFEMI",
+                category: "Logging",
+                priority: "medium",
+                status: "not-started",
+                dueDate: "2025-09-04",
+                progress: "0%",
+                notes: "Device change audit logging"
+            }
+        ];
+
+        function renderTable(items = actionItems) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            items.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="text-align: center; font-weight: 600;">${item.id}</td>
+                    <td style="max-width: 300px; line-height: 1.4;">${item.item}</td>
+                    <td><span class="assignee">${item.assignee}</span></td>
+                    <td><span class="category">${item.category}</span></td>
+                    <td><span class="priority ${item.priority}">${item.priority}</span></td>
+                    <td><span class="status ${item.status}" onclick="changeStatus(${item.id})">${item.status.replace('-', ' ')}</span></td>
+                    <td>${item.dueDate}</td>
+                    <td style="font-weight: 600; color: #495057;">${item.progress}</td>
+                    <td class="notes">${item.notes}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            updateSummary(items);
+        }
+
+        function changeStatus(id) {
+            const item = actionItems.find(item => item.id === id);
+            const statuses = ['not-started', 'in-progress', 'pending', 'completed', 'blocked'];
+            const currentIndex = statuses.indexOf(item.status);
+            const nextIndex = (currentIndex + 1) % statuses.length;
+            
+            item.status = statuses[nextIndex];
+            
+            // Update progress based on status
+            switch(item.status) {
+                case 'not-started': item.progress = '0%'; break;
+                case 'in-progress': item.progress = '50%'; break;
+                case 'pending': item.progress = '25%'; break;
+                case 'completed': item.progress = '100%'; break;
+                case 'blocked': item.progress = '10%'; break;
+            }
+            
+            renderTable(getFilteredItems());
+        }
+
+        function updateSummary(items) {
+            const total = items.length;
+            const completed = items.filter(item => item.status === 'completed').length;
+            const inProgress = items.filter(item => item.status === 'in-progress').length;
+            const pending = items.filter(item => item.status === 'pending' || item.status === 'not-started' || item.status === 'blocked').length;
+            
+            document.getElementById('total-items').textContent = total;
+            document.getElementById('completed-items').textContent = completed;
+            document.getElementById('in-progress-items').textContent = inProgress;
+            document.getElementById('pending-items').textContent = pending;
+        }
+
+        function getFilteredItems() {
+            const statusFilter = document.getElementById('status-filter').value;
+            const assigneeFilter = document.getElementById('assignee-filter').value;
+            const priorityFilter = document.getElementById('priority-filter').value;
+            
+            return actionItems.filter(item => {
+                return (!statusFilter || item.status === statusFilter) &&
+                       (!assigneeFilter || item.assignee === assigneeFilter) &&
+                       (!priorityFilter || item.priority === priorityFilter);
+            });
+        }
+
+        function setupFilters() {
+            ['status-filter', 'assignee-filter', 'priority-filter'].forEach(id => {
+                document.getElementById(id).addEventListener('change', () => {
+                    renderTable(getFilteredItems());
+                });
+            });
+        }
+
+        function exportToCSV() {
+            const items = getFilteredItems();
+            const headers = ['ID', 'Action Item', 'Assignee', 'Category', 'Priority', 'Status', 'Due Date', 'Progress', 'Notes'];
+            
+            let csv = headers.join(',') + '\n';
+            
+            items.forEach(item => {
+                const row = [
+                    item.id,
+                    `"${item.item.replace(/"/g, '""')}"`,
+                    `"${item.assignee}"`,
+                    `"${item.category}"`,
+                    item.priority,
+                    item.status,
+                    item.dueDate,
+                    item.progress,
+                    `"${item.notes.replace(/"/g, '""')}"`
+                ];
+                csv += row.join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'banking_action_items.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+            setupFilters();
+        });
+    </script>
+</body>
+</html>
